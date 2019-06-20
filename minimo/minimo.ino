@@ -10,10 +10,11 @@
 U8G2_ST7565_ERC12864_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ D2, /* dc=*/ D1, /* reset=*/ D9);
 
 int i ;       // 读取文件索引
-int y ;       // 屏幕光标位置
-int x ;       // 屏幕光标位置
+int y = -1;       // 屏幕光标位置
+int x = 0 ;       // 屏幕光标位置
 char l;      //文件当前字符
 int ihan ; //汉字字节计数
+int file_size;// 文件长度
 
 
 void showlogo() {
@@ -108,6 +109,9 @@ void plot_han() {
   }
 }
 
+void plot_meter() {
+}
+
 
 void setup() {
   u8g2.begin();
@@ -120,7 +124,6 @@ void setup() {
   CheckFS();            //检查文件系统
   CheckFile();        //检查文件
   u8g2.clearBuffer();
-
 }
 
 void loop() {
@@ -131,7 +134,7 @@ void loop() {
   f.seek(i, SeekSet);
   l = f.read();
 
-  u8g2.setCursor(x, y + 12 );
+  u8g2.setCursor(x, y + 12);
   if (l < 127) {
     plot_asc();
   }
@@ -139,16 +142,15 @@ void loop() {
     plot_han();
   }
 
-  if (x > 128 - 12)
-  {
+  if (x > 128 - 12) { //写满一行后换行
     x = 0;
     y = y + 12;
   }
-  if (y > 64 - 12)
-  {
+  if (y > 64 - 12) { //写满页面后显示buffer
+    u8g2.drawPixel(127, i*64 / f.size());//一个像素大小进度条
     u8g2.sendBuffer();
     y = 0;
-    delay(5000);
+    delay(50);
     u8g2.clearBuffer();
   }
   if (i >= f.size()) {
